@@ -1,7 +1,6 @@
 import Queue from 'queue'
 
 import { Handlers } from './types'
-import { emitter } from './index'
 
 
 export class AsyncEventEmitter<EventTypes extends Record<string, any>> {

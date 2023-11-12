@@ -1,9 +1,10 @@
 import { AsyncEventEmitterBuilder } from './AsyncEventEmitterBuilder'
 
 const builder = AsyncEventEmitterBuilder.init()
-    .define<{ something: 'here' }, '1'>('1')
-    .define<{ else: 2 }, '2'>('2')
+    .define('1')<{ something: 'here' }>()
+    .define('2')<{ else: 2 }>()
     .on('1', async (e) => null)
-    .define<{ another: 'hi' }, '3'>('3')
+    .define('3')<{ another: 'hi' }>()
     .on('2', async (e) => null)
+
 export const emitter = builder.build()

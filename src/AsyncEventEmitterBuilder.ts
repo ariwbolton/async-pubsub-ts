@@ -9,9 +9,10 @@ export class AsyncEventEmitterBuilder<EventTypes extends Record<string, any>> {
         return new AsyncEventEmitterBuilder<{}>([], {})
     }
 
-    define<EventType, EventName extends string>(event: EventName):
-        AsyncEventEmitterBuilder<EventTypes & { [K in EventName]: EventType }> {
-        return new AsyncEventEmitterBuilder([...this.events, event], this.handlers)
+    define<EventName extends string>(event: EventName){
+        return <EventType>(): AsyncEventEmitterBuilder<EventTypes & { [K in EventName]: EventType }> => {
+            return new AsyncEventEmitterBuilder([...this.events, event], this.handlers)
+        }
     }
 
     on<E extends keyof EventTypes>(name: E, handler: Handler<EventTypes[E]>) {
