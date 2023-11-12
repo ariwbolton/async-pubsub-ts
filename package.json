@@ -1,11 +1,11 @@
 {
   "name": "async-eventemitter-ts",
   "version": "0.0.1",
-  "description": "Async-friendly EventEmitter-style event-bus, with configurable types",
+  "description": "Async-friendly local PubSub implementation, with dynamically configurable types",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha 'src/**/*.test.ts'",
     "build": "tsc"
   },
   "author": "Ari Bolton",
@@ -16,6 +16,8 @@
     "typescript": "^5.2.2"
   },
   "devDependencies": {
-    "@types/node": "^20.9.0"
+    "@types/mocha": "^10.0.4",
+    "@types/node": "^20.9.0",
+    "mocha": "^10.2.0"
   }
 }
