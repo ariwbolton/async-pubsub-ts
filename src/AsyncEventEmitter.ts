@@ -1,15 +1,13 @@
+import Queue from 'queue'
+
 
 type Handler<Event> = (e: Event) => Promise<any>
-type BoxedEvent<EventTypes extends Record<string, any>> = {
-    [K in keyof EventTypes]: { name: K, event: EventTypes[K] }
-}[string]
+type Handlers<EventTypes extends Record<string, any>> = { [E in keyof EventTypes]: Handler<EventTypes[E]>[] }
 
-export class AsyncEventEmitterBuilder<
-    EventTypes extends Record<string, any>
-> {
-    constructor(private readonly events: string[], private handlers: { [E in keyof EventTypes]: Handler<EventTypes[E]>[] }) {}
+export class AsyncEventEmitterBuilder<EventTypes extends Record<string, any>> {
+    constructor(private readonly events: string[], private handlers: Handlers<EventTypes>) {}
 
-    static start() {
+    static init() {
         return new AsyncEventEmitterBuilder<{}>([], {})
     }
 
@@ -19,10 +17,7 @@ export class AsyncEventEmitterBuilder<
         return new AsyncEventEmitterBuilder([...this.events, event], this.handlers)
     }
 
-    on<
-        E extends keyof EventTypes,
-        H extends Handler<EventTypes[E]>
-    >(name: E, handler: H) {
+    on<E extends keyof EventTypes>(name: E, handler: Handler<EventTypes[E]>) {
         if (!this.handlers[name]) {
             this.handlers[name] = []
         }
@@ -38,16 +33,26 @@ export class AsyncEventEmitterBuilder<
 }
 
 export class AsyncEventEmitter<EventTypes extends Record<string, any>> {
-    private queue: BoxedEvent<EventTypes>[] = []
+    private queue = new Queue()
 
-    constructor(private readonly handlers: Record<string, Handler<any>[]>) {}
+    constructor(private readonly handlers: Handlers<EventTypes>) {}
 
-    emit<N extends keyof EventTypes, E extends EventTypes[N]>(name: N, event: E) {
-        this.queue.push({ name, event } as BoxedEvent<EventTypes>)
+    async start() {
+        await this.queue.start()
+    }
+
+    emit<N extends keyof EventTypes>(name: N, event: EventTypes[N]) {
+        if (!this.handlers[name]) {
+            throw new Error(`Invalid event '${String(name)}'`)
+        }
+
+        for (const handler of this.handlers[name]) {
+            this.queue.push(async () => handler(event))
+        }
     }
 }
 
-const builder = AsyncEventEmitterBuilder.start()
+const builder = AsyncEventEmitterBuilder.init()
     .define<{ something: 'here' }, '1'>('1')
     .define<{ else: 2 }, '2'>('2')
     .on('1', async (e) => null)
@@ -55,3 +60,5 @@ const builder = AsyncEventEmitterBuilder.start()
     .on('2', async (e) => null)
 
 const emitter = builder.build()
+
+emitter.emit('1', { something: 'here' })
