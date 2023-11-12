@@ -1,17 +1,17 @@
 import { Handler, Handlers } from './types'
-import { AsyncEventEmitter } from './AsyncEventEmitter'
+import { AsyncPubSub } from './AsyncPubSub.js'
 
-export class AsyncEventEmitterBuilder<EventTypes extends Record<string, any>> {
+export class AsyncPubSubBuilder<EventTypes extends Record<string, any>> {
     constructor(private readonly events: string[], private handlers: Handlers<EventTypes>) {
     }
 
     static init() {
-        return new AsyncEventEmitterBuilder<{}>([], {})
+        return new AsyncPubSubBuilder<{}>([], {})
     }
 
     define<EventName extends string>(event: EventName){
-        return <EventType>(): AsyncEventEmitterBuilder<EventTypes & { [K in EventName]: EventType }> => {
-            return new AsyncEventEmitterBuilder([...this.events, event], this.handlers)
+        return <EventType>(): AsyncPubSubBuilder<EventTypes & { [K in EventName]: EventType }> => {
+            return new AsyncPubSubBuilder([...this.events, event], this.handlers)
         }
     }
 
@@ -26,6 +26,6 @@ export class AsyncEventEmitterBuilder<EventTypes extends Record<string, any>> {
     }
 
     build() {
-        return new AsyncEventEmitter<EventTypes>(this.handlers)
+        return new AsyncPubSub<EventTypes>(this.handlers)
     }
 }
